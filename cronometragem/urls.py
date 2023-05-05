@@ -16,7 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from crono.urls import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('cadastrar_piloto/', views.cadastrar_piloto, name='cadastrar_piloto'),
+    path('exibir_pilotos/', views.exibir_pilotos, name='exibir_pilotos'),
+
 ]

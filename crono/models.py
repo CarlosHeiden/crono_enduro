@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Piloto(models.Model):
-    nome = models.CharField(max_length=100)
-    numero_piloto= models.IntegerField(default=None)
+    nome = models.CharField(max_length=100, unique=True)
+    numero_piloto= models.IntegerField(default=None, unique=True)
     moto =  models.CharField(max_length=100)
     categoria = models.CharField(max_length=100)
 

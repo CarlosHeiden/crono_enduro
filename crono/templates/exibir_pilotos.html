@@ -1,0 +1,18 @@
+<h1>Pilotos Cadastrados</h1>
+<table>
+    <tr>
+        <th>Número_piloto</th>
+        <th>Nome</th>
+        <th>Tipo de Moto</th>
+        <th>Categoria</th>
+        </tr>
+        {% for piloto in pilotos %}
+        <tr>
+            <td>{{ piloto.numero_piloto }}</td>
+            <td>{{ piloto.nome }}</td>
+            <td>{{ piloto.tipo_moto }}</td>
+            <td>{{ piloto.categoria }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    

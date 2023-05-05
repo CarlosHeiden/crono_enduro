@@ -1,0 +1,21 @@
+<h1>Cadastrar Piloto</h1>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label for="nome">Nome:</label>
+    <input type="text" name="nome"><br>
+    <label for="numero">Número_piloto:</label>
+    <input type="number" name="numero_piloto"><br>
+    <label for="moto">Moto:</label>
+    <input type="text" name="moto"><br>
+    <label for="categoria">Categoria:</label>
+    <input type="text" name="categoria"><br>
+    <button type="submit">Cadastrar</button>
+</form>
