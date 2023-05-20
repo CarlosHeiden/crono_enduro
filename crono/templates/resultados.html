@@ -1,0 +1,37 @@
+<h1>Resultado Geral</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Piloto</th>
+      <th>Tempo Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for piloto in resultados_gerais %}
+      <tr>
+        <td>{{ piloto.piloto.nome }} (#{{ piloto.numero_piloto }})</td>
+        <td>{{ piloto.tempo_total }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% for categoria, resultados_categoria in resultados_por_categoria.items %}
+  <h1>Categoria {{ categoria }}</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Piloto</th>
+        <th>Tempo Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resultado in resultados_categoria %}
+        <tr>
+          <td>{{ resultado.nome }} (#{{ resultado.numero_piloto }})</td>
+          <td>{{ resultado.tempo_total }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}

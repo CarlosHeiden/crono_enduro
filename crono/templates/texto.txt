@@ -1,0 +1,62 @@
+def resultados(request):
+    resultados = Resultados.objects.all()
+
+    # Resultados gerais
+    resultados_gerais = []
+    for piloto in Piloto.objects.all():
+        tempo_total = sum(resultado.tempo_volta.total_seconds() for resultado in resultados.filter(numero_piloto=piloto.numero_piloto))
+        resultados_gerais.append({'piloto': piloto, 'numero_piloto': piloto.numero_piloto, 'tempo_total': tempo_total})
+    resultados_gerais = sorted(resultados_gerais, key=lambda x: x['tempo_total'])
+    print(resultados_gerais)
+
+    # Resultados por categoria
+    resultados_por_categoria = {}
+    for categoria in ['Over_50', 'Over_40', 'pro']:
+        resultados_categoria = []
+        for resultado in resultados.filter(categoria=categoria):
+            tempo_total = sum(res.tempo_volta.total_seconds() for res in resultados.filter(numero_piloto=resultado.numero_piloto))
+            resultados_categoria.append({'nome': resultado.nome, 'numero_piloto': resultado.numero_piloto, 'tempo_total': tempo_total})
+        resultados_por_categoria[categoria] = sorted(resultados_categoria, key=lambda x: x['tempo_total'])
+    
+    return render(request, 'resultados.html', {'resultados_gerais': resultados_gerais,
+                                                'resultados_por_categoria': resultados_por_categoria})
+
+#arquivo html
+
+<h1>Resultado Geral</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Piloto</th>
+      <th>Tempo Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for piloto in resultados_gerais %}
+      <tr>
+        <td>{{ piloto.piloto.nome }} (#{{ piloto.numero_piloto }})</td>
+        <td>{{ piloto.tempo_total }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% for categoria, resultados_categoria in resultados_por_categoria.items %}
+  <h1>Categoria  {{ categoria }}</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Piloto</th>
+        <th>Tempo Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resultado in resultados_categoria %}
+        <tr>
+          <td>{{ resultado.nome }} (#{{ resultado.numero_piloto }})</td>
+          <td>{{ resultado.tempo_total }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
