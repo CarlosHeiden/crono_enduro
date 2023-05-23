@@ -2,15 +2,17 @@
 <table>
   <thead>
     <tr>
+      <th>Classificação</th>
       <th>Piloto</th>
       <th>Tempo Total</th>
     </tr>
   </thead>
   <tbody>
-    {% for piloto in resultados_gerais %}
+    {% for resultado in resultados_gerais %}
       <tr>
-        <td>{{ piloto.piloto.nome }} (#{{ piloto.numero_piloto }})</td>
-        <td>{{ piloto.tempo_total }}</td>
+        <td>{{ resultado.position }}</td>
+        <td>{{ resultado.piloto.nome }} (#{{ resultado.numero_piloto }})</td>
+        <td>{{ resultado.tempo_total }}</td>
       </tr>
     {% endfor %}
   </tbody>
@@ -21,6 +23,7 @@
   <table>
     <thead>
       <tr>
+        <th>Classificação</th>
         <th>Piloto</th>
         <th>Tempo Total</th>
       </tr>
@@ -28,10 +31,11 @@
     <tbody>
       {% for resultado in resultados_categoria %}
         <tr>
+          <td>{{ resultado.position }}</td>
           <td>{{ resultado.nome }} (#{{ resultado.numero_piloto }})</td>
           <td>{{ resultado.tempo_total }}</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-{% endfor %}
+{% endfor %}]

@@ -25,5 +25,6 @@ urlpatterns = [
     path('registrar_largada/', views.registrar_largada, name='registrar_largada'),
     path('registrar_chegada/', views.registrar_chegada, name='registrar_chegada'),
     path('resultados/', views.resultados, name='resultados'),
+    path('resultado_piloto/', views.resultado_piloto, name='resultado_piloto'),
 ]
 

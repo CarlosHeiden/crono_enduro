@@ -100,7 +100,6 @@ def exibir_pilotos(request):
     return render(request, 'exibir_pilotos.html', {'pilotos': pilotos})
 
 
-
 def resultados(request):
     resultados = Resultados.objects.all()
 
@@ -108,8 +107,13 @@ def resultados(request):
     resultados_gerais = []
     for piloto in Piloto.objects.all():
         tempo_total = sum(resultado.tempo_volta.total_seconds() for resultado in resultados.filter(numero_piloto=piloto.numero_piloto))
-        resultados_gerais.append({'piloto': piloto, 'numero_piloto': piloto.numero_piloto, 'tempo_total': tempo_total})
+        tempo_total_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_total // 3600), int((tempo_total % 3600) // 60), (tempo_total % 60))
+        resultados_gerais.append({'piloto': piloto, 'numero_piloto': piloto.numero_piloto, 'tempo_total': tempo_total_str})
     resultados_gerais = sorted(resultados_gerais, key=lambda x: x['tempo_total'])
+
+    # Adicionando posição aos resultados gerais
+    for position, piloto in enumerate(resultados_gerais, start=1):
+        piloto['position'] = position
 
     # Resultados por categoria
     categorias = ['Over_50', 'Over_40', 'pro']
@@ -122,9 +126,46 @@ def resultados(request):
             if resultado.nome not in [res['nome'] for res in resultados_por_categoria[categoria]] and resultado.numero_piloto not in [res['numero_piloto'] for res in resultados_por_categoria[categoria]]:
                 if resultado.numero_piloto not in tempo_total_por_piloto:
                     tempo_total_por_piloto[resultado.numero_piloto] = sum(res.tempo_volta.total_seconds() for res in resultados_dict[categoria].filter(numero_piloto=resultado.numero_piloto))
-                resultados_por_categoria[categoria].append({'nome': resultado.nome, 'numero_piloto': resultado.numero_piloto, 'tempo_total': tempo_total})
+                    tempo_total_por_piloto_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_total_por_piloto[resultado.numero_piloto] // 3600), 
+                                                                            int((tempo_total_por_piloto[resultado.numero_piloto] % 3600) // 60),
+                                                                            tempo_total_por_piloto[resultado.numero_piloto] % 60)
+                    resultados_por_categoria[categoria].append({'nome': resultado.nome, 'numero_piloto': resultado.numero_piloto, 'tempo_total': tempo_total_por_piloto_str})
 
         resultados_por_categoria[categoria] = sorted(resultados_por_categoria[categoria], key=lambda x: x['tempo_total'])
 
+    # Adicionando posição aos resultados por categoria
+    for categoria, resultados_categoria in resultados_por_categoria.items():
+        for position, resultado in enumerate(resultados_categoria, start=1):
+            resultado['position'] = position
+
     return render(request, 'resultados.html', {'resultados_gerais': resultados_gerais,
                                                 'resultados_por_categoria': resultados_por_categoria})
+
+
+
+def resultado_piloto(request):
+    piloto_detail = []
+    for piloto in Piloto.objects.all():
+        resultados = Resultados.objects.filter(numero_piloto=piloto.numero_piloto)
+        volta_detail = []
+        for resultado in resultados:
+            tempo_volta = resultado.tempo_volta.total_seconds()
+            tempo_volta_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_volta // 3600), int((tempo_volta % 3600) // 60), (tempo_volta % 60))
+            volta_detail.append({
+                'id_volta': resultado.id_volta,
+                'horario_largada': resultado.horario_largada,
+                'horario_chegada': resultado.horario_chegada,
+                'tempo_volta': tempo_volta_str,
+            })
+
+        tempo_total = sum(resultado.tempo_volta.total_seconds() for resultado in resultados)
+        tempo_total_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_total // 3600), int((tempo_total % 3600) // 60), (tempo_total % 60))
+
+        piloto_detail.append({
+            'piloto': piloto,
+            'numero_piloto': piloto.numero_piloto,
+            'voltas': volta_detail,
+            'tempo_total': tempo_total_str,
+        })
+
+    return render(request, 'resultado_piloto.html', {'piloto_detail' : piloto_detail})

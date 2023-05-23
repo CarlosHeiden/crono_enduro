@@ -1,3 +1,5 @@
+#arquivo views
+
 def resultados(request):
     resultados = Resultados.objects.all()
 
@@ -5,35 +7,46 @@ def resultados(request):
     resultados_gerais = []
     for piloto in Piloto.objects.all():
         tempo_total = sum(resultado.tempo_volta.total_seconds() for resultado in resultados.filter(numero_piloto=piloto.numero_piloto))
-        resultados_gerais.append({'piloto': piloto, 'numero_piloto': piloto.numero_piloto, 'tempo_total': tempo_total})
+        tempo_total_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_total // 3600), int((tempo_total % 3600) // 60), (tempo_total % 60))
+        resultados_gerais.append({'piloto': piloto, 'numero_piloto': piloto.numero_piloto, 'tempo_total': tempo_total_str})
     resultados_gerais = sorted(resultados_gerais, key=lambda x: x['tempo_total'])
-    print(resultados_gerais)
 
     # Resultados por categoria
-    resultados_por_categoria = {}
-    for categoria in ['Over_50', 'Over_40', 'pro']:
-        resultados_categoria = []
-        for resultado in resultados.filter(categoria=categoria):
-            tempo_total = sum(res.tempo_volta.total_seconds() for res in resultados.filter(numero_piloto=resultado.numero_piloto))
-            resultados_categoria.append({'nome': resultado.nome, 'numero_piloto': resultado.numero_piloto, 'tempo_total': tempo_total})
-        resultados_por_categoria[categoria] = sorted(resultados_categoria, key=lambda x: x['tempo_total'])
-    
+    categorias = ['Over_50', 'Over_40', 'pro']
+    resultados_por_categoria = {categoria: [] for categoria in categorias}
+    resultados_dict = {categoria: resultados.filter(categoria=categoria) for categoria in categorias}
+
+    tempo_total_por_piloto = {}
+    for categoria, resultados_categoria in resultados_dict.items():
+        for resultado in resultados_categoria:
+            if resultado.nome not in [res['nome'] for res in resultados_por_categoria[categoria]] and resultado.numero_piloto not in [res['numero_piloto'] for res in resultados_por_categoria[categoria]]:
+                if resultado.numero_piloto not in tempo_total_por_piloto:
+                    tempo_total_por_piloto[resultado.numero_piloto] = sum(res.tempo_volta.total_seconds() for res in resultados_dict[categoria].filter(numero_piloto=resultado.numero_piloto))
+                    tempo_total_por_piloto_str = '{:02d}:{:02d}:{:06.3f}'.format(int(tempo_total_por_piloto[resultado.numero_piloto] // 3600), 
+                                                                            int((tempo_total_por_piloto[resultado.numero_piloto] % 3600) // 60),
+                                                                            tempo_total_por_piloto[resultado.numero_piloto] % 60)
+                    resultados_por_categoria[categoria].append({'nome': resultado.nome, 'numero_piloto': resultado.numero_piloto, 'tempo_total': tempo_total_por_piloto_str})
+
+        resultados_por_categoria[categoria] = sorted(resultados_por_categoria[categoria], key=lambda x: x['tempo_total'])
+
     return render(request, 'resultados.html', {'resultados_gerais': resultados_gerais,
                                                 'resultados_por_categoria': resultados_por_categoria})
 
-#arquivo html
+#arquivo resultados.html
 
-<h1>Resultado Geral</h1>
+[<h1>Resultado Geral</h1>
 <table>
   <thead>
     <tr>
+      <th>Classificação</th>
       <th>Piloto</th>
       <th>Tempo Total</th>
     </tr>
   </thead>
   <tbody>
-    {% for piloto in resultados_gerais %}
+    {% for position, piloto in resultados_gerais %}
       <tr>
+        <td>{{ position }}</td>
         <td>{{ piloto.piloto.nome }} (#{{ piloto.numero_piloto }})</td>
         <td>{{ piloto.tempo_total }}</td>
       </tr>
@@ -42,21 +55,23 @@ def resultados(request):
 </table>
 
 {% for categoria, resultados_categoria in resultados_por_categoria.items %}
-  <h1>Categoria  {{ categoria }}</h1>
+  <h1>Categoria {{ categoria }}</h1>
   <table>
     <thead>
       <tr>
+        <th>Classificação</th>
         <th>Piloto</th>
         <th>Tempo Total</th>
       </tr>
     </thead>
     <tbody>
-      {% for resultado in resultados_categoria %}
+      {% for position, resultado in resultados_categoria %}
         <tr>
+          <td>{{ position }}</td>
           <td>{{ resultado.nome }} (#{{ resultado.numero_piloto }})</td>
           <td>{{ resultado.tempo_total }}</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-{% endfor %}
+{% endfor %}]
