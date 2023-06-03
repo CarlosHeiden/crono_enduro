@@ -6,27 +6,8 @@
     {% endfor %}
   </ul>
 {% endif %}
-
 <form method="post">
   {% csrf_token %}
-  <table>
-    <tr>
-      <td><label for="nome">Nome:</label></td>
-      <td><input type="text" name="nome"></td>
-    </tr>
-    <tr>
-      <td><label for="numero">Número_piloto:</label></td>
-      <td><input type="number" name="numero_piloto"></td>
-    </tr>
-    <tr>
-      <td><label for="moto">Moto:</label></td>
-      <td><input type="text" name="moto"></td>
-    </tr>
-    <tr>
-      <td><label for="categoria">Categoria:</label></td>
-      <td><input type="text" name="categoria"></td>
-    </tr>
-  </table>
-
-  <button type="submit">Cadastrar</button>
+  {{ form.as_p }}
+  <button type="submit">Enviar</button>
 </form>

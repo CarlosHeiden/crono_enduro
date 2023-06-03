@@ -3,26 +3,31 @@ from crono.models import Piloto, RegistrarLargada, RegistrarChegada, Resultados
 from django.contrib import messages
 from django.db.models import Q
 from datetime import datetime, timedelta, timezone, date
-from crono.forms import RegistrarLargadaForm, RegistrarChegadaForm
+from crono.forms import RegistrarLargadaForm, RegistrarChegadaForm, CadastrarPilotoForm
 from django.shortcuts import get_object_or_404
 
 def cadastrar_piloto(request):
     if request.method == 'POST':
-        nome = request.POST.get('nome')
-        numero_piloto = request.POST.get('numero_piloto')
-        moto = request.POST.get('moto')
-        categoria = request.POST.get('categoria')
-
+        form = CadastrarPilotoForm(request.POST)
+        if form.is_valid():
+            nome = form.cleaned_data['nome']
+            numero_piloto = form.cleaned_data['numero_piloto']
+            moto = form.cleaned_data['moto']
+            categoria = form.cleaned_data['categoria']
+        
         # Verifica se já existe um piloto com o mesmo nome ou número
-        if Piloto.objects.filter(Q(nome=nome) | Q(numero_piloto=numero_piloto)).exists():
-            messages.error(request, 'Já existe um piloto com esse nome ou número.')
-        else:
-            piloto = Piloto(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria)
-            piloto.save()
-            messages.success(request, 'Piloto cadastrado com sucesso.')
-            return redirect('cadastrar_piloto')
+            if Piloto.objects.filter(Q(nome=nome) | Q(numero_piloto=numero_piloto)).exists():
+                messages.error(request, 'Já existe um piloto com esse nome ou número.')
+            else:
+                piloto = Piloto(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria)
+                piloto.save()
+                messages.success(request, 'Piloto cadastrado com sucesso.')
+                return redirect('cadastrar_piloto')
+            
+    else:
+        form = CadastrarPilotoForm()
 
-    return render(request, 'cadastrar_piloto.html')
+    return render(request, 'cadastrar_piloto.html', {'form': form})
 
 
 def registrar_largada(request):
