@@ -25,10 +25,9 @@ class RegistrarChegada(models.Model):
     horario_chegada = models.TimeField(null=True, blank=True)
 
 
-
 class DadosCorrida(models.Model):
     nome = models.CharField(max_length=100)
-    numero_piloto= models.IntegerField(default=None)
+    numero_piloto = models.ForeignKey(Piloto, on_delete=models.CASCADE, related_name='chegadas')
     moto =  models.CharField(max_length=100)
     categoria = models.CharField(max_length=100)
     id_volta = models.AutoField(primary_key=True)
@@ -45,7 +44,7 @@ class DadosCorrida(models.Model):
 #arquivo views.py
 
 from django.shortcuts import render, redirect
-from crono.models import Piloto, RegistrarLargada, RegistrarChegada, Resultados
+from crono.models import Piloto, RegistrarLargada, RegistrarChegada,Resultados, DadosCorrida
 from django.contrib import messages
 from django.db.models import Q
 from datetime import datetime, timedelta, timezone, date
@@ -103,8 +102,11 @@ def registrar_chegada(request):
             agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             chegada = RegistrarChegada(numero_piloto=piloto, horario_chegada=agora)
             chegada.save()
+
             messages.success(request, 'Horário de chegada cadastrado com sucesso')
 
+           
+            save_resultados()
            
             return redirect('registrar_chegada')
 
@@ -112,37 +114,6 @@ def registrar_chegada(request):
         form = RegistrarChegadaForm()
 
     return render(request, 'registrar_chegada.html', {'form': form})
-
-
-def save_dados_corrida(piloto, largada, chegada):
-    piloto_obj2 = Piloto.objects.filter(nome=piloto.nome, numero_piloto=piloto.numero_piloto, moto=piloto.moto, categoria=piloto.categoria).first()
-    largada_obj2 = RegistrarLargada.objects.filter(horario_largada=largada.horario_largada).last()
-    chegada_obj2 = RegistrarChegada.objects.filter(horario_chegada=chegada.horario_chegada).last()
-    
-    if largada_obj2 is None or chegada_obj2 is None:
-        # Lida com o caso em que os objetos não são encontrados
-        return
-    
-    
-    nome = piloto_obj2.nome
-    numero_piloto = piloto_obj2.numero_piloto
-    moto = piloto_obj2.moto
-    categoria = piloto_obj2.categoria
-    #id_volta =largada_obj2.id_volta
-    horario_largada =largada_obj2.horario_largada
-    horario_chegada = chegada_obj2.horario_chegada
-    tempo_volta = datetime.combine(date.today(), horario_chegada) - datetime.combine(date.today(), horario_largada)
-
-    dados_corrida = DadosCorrida(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria,
-                            horario_largada=horario_largada,
-                           horario_chegada=horario_chegada, tempo_volta=tempo_volta)
-
-    dados_corrida.tempo_volta = tempo_volta
-    tempo_total = sum(DadosCorrida.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
-    dados_corrida.tempo_total = tempo_total
-    dados_corrida.save()
-
-
 
 
 

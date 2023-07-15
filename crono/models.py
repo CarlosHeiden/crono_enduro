@@ -39,7 +39,19 @@ class Resultados(models.Model):
         return f"{self.nome} ({self.numero_piloto})"
 
    
+class DadosCorrida(models.Model):
+    nome = models.CharField(max_length=100)
+    numero_piloto= models.IntegerField(default=None)
+    moto =  models.CharField(max_length=100)
+    categoria = models.CharField(max_length=100)
+    id_volta = models.AutoField(primary_key=True)
+    horario_largada = models.TimeField(null=True, blank=True)
+    horario_chegada = models.TimeField(null=True, blank=True)
+    tempo_volta = models.DurationField(null=True, blank=True)
+    tempo_total = models.DurationField(null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.nome} ({self.numero_piloto})"
     
     
-   
+  

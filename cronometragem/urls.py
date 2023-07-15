@@ -21,11 +21,7 @@ from crono.urls import *
 urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('admin/', admin.site.urls),
-    path('cadastrar_piloto/', views.cadastrar_piloto, name='cadastrar_piloto'),
-    path('exibir_pilotos/', views.exibir_pilotos, name='exibir_pilotos'),
-    path('registrar_largada/', views.registrar_largada, name='registrar_largada'),
-    path('registrar_chegada/', views.registrar_chegada, name='registrar_chegada'),
-    path('resultados/', views.resultados, name='resultados'),
-    path('resultado_piloto/', views.resultado_piloto, name='resultado_piloto'),
+    path('', include('crono.urls')),
+    
 ]
 
