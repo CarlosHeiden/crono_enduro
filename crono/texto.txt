@@ -1,119 +1,72 @@
-#arquivo models.py
-
-from django.db import models
-from django.utils import timezone
-
-class Piloto(models.Model):
-    nome = models.CharField(max_length=100)
-    numero_piloto= models.IntegerField(default=None)
-    moto =  models.CharField(max_length=100)
-    categoria = models.CharField(max_length=100)
-
-    def __str__(self):
-        return f"{self.nome} ({self.numero_piloto})"
 
 
-class RegistrarLargada(models.Model):
-    id_volta = models.AutoField(primary_key=True)
-    numero_piloto = models.ForeignKey(Piloto, on_delete=models.CASCADE, related_name='largadas')
-    horario_largada = models.TimeField(null=True, blank=True)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados Tomada de Tempo por Categorias</title>
+</head>
+<body>
+    <h1>Resultados Tomada de Tempo por Categorias</h1>
 
+    {% for categoria in categorias %}
+    <h2>{{ categoria }}</h2>
 
-class RegistrarChegada(models.Model):
-    id_volta = models.AutoField(primary_key=True)
-    numero_piloto = models.ForeignKey(Piloto, on_delete=models.CASCADE, related_name='chegadas')
-    horario_chegada = models.TimeField(null=True, blank=True)
-
-
-class DadosCorrida(models.Model):
-    nome = models.CharField(max_length=100)
-    numero_piloto = models.ForeignKey(Piloto, on_delete=models.CASCADE, related_name='chegadas')
-    moto =  models.CharField(max_length=100)
-    categoria = models.CharField(max_length=100)
-    id_volta = models.AutoField(primary_key=True)
-    horario_largada = models.TimeField(null=True, blank=True)
-    horario_chegada = models.TimeField(null=True, blank=True)
-    tempo_volta = models.DurationField(null=True, blank=True)
-    tempo_total = models.DurationField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.nome} ({self.numero_piloto})"
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Nome do Piloto</th>
+                <th>Número do Piloto</th>
+                <th>Tempo Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados_por_categoria %}
+            <tr>
+                <td>{{ resultado.position }}</td>
+                <td>{{ resultado.nome }}</td>
+                <td>{{ resultado.numero_piloto }}</td>
+                <td>{{ resultado.tempo_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     
+    {% endfor %}
+</body>
+</html>
+
+from django.db.models import Min
+
+def resultado_tomada_tempo_por_categorias(request):
+    categorias = ['Over_50', 'Over_40', 'pro']
+    resultados_por_categoria = {categoria: [] for categoria in categorias}
+
+    for categoria in categorias:
+        # Use a função Min do Django para obter o tempo mínimo de cada piloto na categoria
+        resultados_categoria = DadosCorrida.objects.filter(categoria=categoria).values(
+            'numero_piloto', 'nome').annotate(tempo_min=Min('tempo_volta')).order_by('tempo_min')
+
+        for position, resultado in enumerate(resultados_categoria, start=1):
+            resultado['position'] = position
+            tempo_min = resultado['tempo_min']
+            horas, segundos = divmod(tempo_min.seconds, 3600)
+            minutos, segundos = divmod(segundos, 60)
+            milissegundos = tempo_min.microseconds // 1000
+
+            resultado['tempo_total'] = f'{horas:02d}:{minutos:02d}:{segundos:02d}.{milissegundos:03d}'
+
+            resultados_por_categoria[categoria].append(resultado)
+        for resultado in resultados_categoria:
+            resultado.pop('tempo_min', None)
+
+    print(resultados_por_categoria)
+      
+    return render(request, 'resultado_tomada_tempo_por_categorias.html', {'categorias': categorias, 'resultado_por_categoria': resultados_por_categoria})
 
 
-#arquivo views.py
-
-from django.shortcuts import render, redirect
-from crono.models import Piloto, RegistrarLargada, RegistrarChegada,Resultados, DadosCorrida
-from django.contrib import messages
-from django.db.models import Q
-from datetime import datetime, timedelta, timezone, date
-from crono.forms import RegistrarLargadaForm, RegistrarChegadaForm, CadastrarPilotoForm
-from django.shortcuts import get_object_or_404
-
-def cadastrar_piloto(request):
-    if request.method == 'POST':
-        form = CadastrarPilotoForm(request.POST)
-        if form.is_valid():
-            nome = form.cleaned_data['nome']
-            numero_piloto = form.cleaned_data['numero_piloto']
-            moto = form.cleaned_data['moto']
-            categoria = form.cleaned_data['categoria']
-        
-        # Verifica se já existe um piloto com o mesmo nome ou número
-            if Piloto.objects.filter(Q(nome=nome) | Q(numero_piloto=numero_piloto)).exists():
-                messages.error(request, 'Já existe um piloto com esse nome ou número.')
-            else:
-                piloto = Piloto(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria)
-                piloto.save()
-                messages.success(request, 'Piloto cadastrado com sucesso.')
-                return redirect('cadastrar_piloto')
-            
-    else:
-        form = CadastrarPilotoForm()
-
-    return render(request, 'cadastrar_piloto.html', {'form': form})
-
-
-def registrar_largada(request):
-    if request.method == 'POST':
-        form = RegistrarLargadaForm(request.POST)
-        if form.is_valid():
-            numero_piloto = form.cleaned_data['numero_piloto']
-            piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
-            agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
-            largada= RegistrarLargada(numero_piloto=piloto, horario_largada= agora )
-            largada.save()
-            messages.success(request, 'Horário de largada cadastrado com sucesso')
-            return redirect('registrar_largada')
-    else:        
-        form = RegistrarLargadaForm()
-
-    return render(request, 'registrar_largada.html', {'form': form})
-
-
-def registrar_chegada(request):
-    numero_piloto = None
-    if request.method == 'POST':
-        form = RegistrarChegadaForm(request.POST)
-        if form.is_valid():
-            numero_piloto = form.cleaned_data['numero_piloto']
-            piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
-            agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
-            chegada = RegistrarChegada(numero_piloto=piloto, horario_chegada=agora)
-            chegada.save()
-
-            messages.success(request, 'Horário de chegada cadastrado com sucesso')
-
-           
-            save_resultados()
-           
-            return redirect('registrar_chegada')
-
-    else:
-        form = RegistrarChegadaForm()
-
-    return render(request, 'registrar_chegada.html', {'form': form})
 
 
 
