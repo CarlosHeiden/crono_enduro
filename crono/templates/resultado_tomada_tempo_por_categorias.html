@@ -28,7 +28,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <h1>Resultados Categoria PRO</h1>
+    <h1>Resultados Categoria Over 40</h1>
 
     <table>
         <thead>
@@ -40,7 +40,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for resultado in resultados_por_categoria_pro %}
+            {% for resultado in resultados_por_categoria_over_40 %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ resultado.nome }}</td>
@@ -50,5 +50,27 @@
             {% endfor %}
         </tbody>
     </table>
+</table>
+<h1>Resultados Categoria PRO</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Posição</th>
+            <th>Nome</th>
+            <th>Número</th>
+            <th>Melhor tempo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resultado in resultados_por_categoria_pro %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ resultado.nome }}</td>
+            <td>{{ resultado.numero_piloto }}</td>
+            <td>{{ resultado.tempo_total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </body>
 </html>

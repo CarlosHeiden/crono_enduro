@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from crono.models import Piloto, RegistrarLargada, RegistrarChegada,Resultados, DadosCorrida
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Min
 from datetime import datetime, timedelta, timezone, date
 from crono.forms import RegistrarLargadaForm, RegistrarChegadaForm, CadastrarPilotoForm
 from django.shortcuts import get_object_or_404
+
 
 def cadastrar_piloto(request):
     if request.method == 'POST':
@@ -252,11 +253,8 @@ def resultado_tomada_tempo(request):
 
     return render(request, 'resultado_geral_tomada_tempo.html', {'resultado_geral_tomada_tempo': resultado_geral_tomada_tempo})
 
-from django.db.models import Min
 
-from django.db.models import Min
 
-from django.db.models import Min
 
 def resultado_tomada_tempo_por_categorias(request):
     categorias = ['Over_50', 'Over_40', 'pro']
@@ -306,3 +304,28 @@ def resultado_tomada_tempo_por_categorias(request):
         'resultados_por_categoria_over_40': resultados_por_categoria_over_40,
         'resultados_por_categoria_pro': resultados_por_categoria_pro
     })
+
+def resultado_tomada_tempo_por_piloto(request):
+    piloto_detail = []
+    for piloto in Piloto.objects.all():
+        resultados = DadosCorrida.objects.filter(numero_piloto=piloto.numero_piloto)
+        volta_detail = []
+        for resultado in resultados:
+            tempo_volta = resultado.tempo_volta.total_seconds()
+            tempo_volta_str = '{:02d}:{:02d}:{:02.3f}'.format(int(tempo_volta // 3600), int((tempo_volta % 3600) // 60), (tempo_volta % 60))
+            horario_chegada_str = resultado.horario_chegada.strftime('%H:%M:%S')
+            horario_largada_str = resultado.horario_largada.strftime('%H:%M:%S')
+            volta_detail.append({
+                'horario_largada': horario_largada_str,
+                'horario_chegada': horario_chegada_str,
+                'tempo_volta': tempo_volta_str,
+            })
+
+
+        piloto_detail.append({
+            'piloto': piloto,
+            'numero_piloto': piloto.numero_piloto,
+            'voltas': volta_detail,
+        })
+
+    return render(request, 'resultado_tomada_tempo_por_piloto.html', {'piloto_detail' : piloto_detail})

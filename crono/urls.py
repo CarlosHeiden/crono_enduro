@@ -11,4 +11,5 @@ urlpatterns = [
     path('resultado_piloto/', views.resultado_piloto, name='resultado_piloto'),
     path('resultado_geral_tomada_tempo/', views.resultado_tomada_tempo, name='resultado_geral_tomada_tempo'),
     path('resultado_por_categorias/', views.resultado_tomada_tempo_por_categorias, name='resultado_por_categorias'),
+    path('resultado_tomada_tempo_por_piloto/', views.resultado_tomada_tempo_por_piloto, name='resultado_tomada_tempo_por_piloto'),
 ]
