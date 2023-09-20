@@ -1,72 +1,30 @@
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados Tomada de Tempo por Categorias</title>
-</head>
-<body>
-    <h1>Resultados Tomada de Tempo por Categorias</h1>
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
-    {% for categoria in categorias %}
-    <h2>{{ categoria }}</h2>
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Posição</th>
-                <th>Nome do Piloto</th>
-                <th>Número do Piloto</th>
-                <th>Tempo Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for resultado in resultados_por_categoria %}
-            <tr>
-                <td>{{ resultado.position }}</td>
-                <td>{{ resultado.nome }}</td>
-                <td>{{ resultado.numero_piloto }}</td>
-                <td>{{ resultado.tempo_total }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    {% endfor %}
-</body>
-</html>
-
-from django.db.models import Min
-
-def resultado_tomada_tempo_por_categorias(request):
-    categorias = ['Over_50', 'Over_40', 'pro']
-    resultados_por_categoria = {categoria: [] for categoria in categorias}
-
-    for categoria in categorias:
-        # Use a função Min do Django para obter o tempo mínimo de cada piloto na categoria
-        resultados_categoria = DadosCorrida.objects.filter(categoria=categoria).values(
-            'numero_piloto', 'nome').annotate(tempo_min=Min('tempo_volta')).order_by('tempo_min')
-
-        for position, resultado in enumerate(resultados_categoria, start=1):
-            resultado['position'] = position
-            tempo_min = resultado['tempo_min']
-            horas, segundos = divmod(tempo_min.seconds, 3600)
-            minutos, segundos = divmod(segundos, 60)
-            milissegundos = tempo_min.microseconds // 1000
-
-            resultado['tempo_total'] = f'{horas:02d}:{minutos:02d}:{segundos:02d}.{milissegundos:03d}'
-
-            resultados_por_categoria[categoria].append(resultado)
-        for resultado in resultados_categoria:
-            resultado.pop('tempo_min', None)
-
-    print(resultados_por_categoria)
-      
-    return render(request, 'resultado_tomada_tempo_por_categorias.html', {'categorias': categorias, 'resultado_por_categoria': resultados_por_categoria})
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def registrar_largada(request):
+    # código da função aqui
 
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'est_framework.authentication.BasicAuthentication',
+    ],
+}
+
+INSTALLED_APPS = [
+    #...
+    'django.contrib.auth',
+    'rest_framework',
+    #...
+]
+
+python manage.py makemigrations
+python manage.py migrate
 
 
 
