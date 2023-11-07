@@ -165,7 +165,7 @@ def resultados(request):
         piloto['position'] = position
 
     # Resultados por categoria
-    categorias = ['Over_50', 'Over_40', 'pro']
+    categorias = ['Nacional', 'Importada', 'Over']
     resultados_por_categoria = {categoria: [] for categoria in categorias}
     resultados_dict = {categoria: resultado.filter(categoria=categoria) for categoria in categorias}
 
@@ -257,10 +257,10 @@ def resultado_tomada_tempo(request):
 
 
 def resultado_tomada_tempo_por_categorias(request):
-    categorias = ['Over_50', 'Over_40', 'pro']
-    resultados_por_categoria_over_50 = []
-    resultados_por_categoria_over_40 = []
-    resultados_por_categoria_pro = []
+    categorias = ['Nacional', 'Importada', 'Over']
+    resultados_por_categoria_nacional = []
+    resultados_por_categoria_importada = []
+    resultados_por_categoria_over = []
 
     for categoria in categorias:
         resultados_categoria = DadosCorrida.objects.filter(categoria=categoria)
@@ -280,29 +280,29 @@ def resultado_tomada_tempo_por_categorias(request):
             # Formate cada parte do tempo com zeros à esquerda, se necessário
             tempo_volta_formatado = '{:02d}:{:02d}:{:02d}.{:03d}'.format(horas, minutos, segundos, milissegundos)
 
-            if categoria == 'Over_50':
-                resultados_por_categoria_over_50.append({
+            if categoria == 'Nacional':
+                resultados_por_categoria_nacional.append({
                     'nome': resultado['nome'],
                     'numero_piloto': resultado['numero_piloto'],
                     'tempo_total': tempo_volta_formatado
                 })
-            elif categoria == 'Over_40':
-                resultados_por_categoria_over_40.append({
+            elif categoria == 'Importada':
+                resultados_por_categoria_importada.append({
                     'nome': resultado['nome'],
                     'numero_piloto': resultado['numero_piloto'],
                     'tempo_total': tempo_volta_formatado
                 })
-            elif categoria == 'pro':
-                resultados_por_categoria_pro.append({
+            elif categoria == 'Over':
+                resultados_por_categoria_over.append({
                     'nome': resultado['nome'],
                     'numero_piloto': resultado['numero_piloto'],
                     'tempo_total': tempo_volta_formatado
                 })
 
     return render(request, 'resultado_tomada_tempo_por_categorias.html', {
-        'resultados_por_categoria_over_50': resultados_por_categoria_over_50,
-        'resultados_por_categoria_over_40': resultados_por_categoria_over_40,
-        'resultados_por_categoria_pro': resultados_por_categoria_pro
+        'resultados_por_categoria_nacional': resultados_por_categoria_nacional,
+        'resultados_por_categoria_importada': resultados_por_categoria_importada,
+        'resultados_por_categoria_over': resultados_por_categoria_over
     })
 
 def resultado_tomada_tempo_por_piloto(request):
