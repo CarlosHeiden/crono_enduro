@@ -12,7 +12,7 @@ def registrar_largada(request):
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'est_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ],
 }
 
@@ -27,4 +27,20 @@ python manage.py makemigrations
 python manage.py migrate
 
 
+
+def registrar_largada(request):
+    if request.method == 'POST':
+        form = RegistrarLargadaForm(request.POST)
+        if form.is_valid():
+            numero_piloto = form.cleaned_data['numero_piloto']
+            piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
+            agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+            largada= RegistrarLargada(numero_piloto=piloto, horario_largada= agora )
+            largada.save()
+            messages.success(request, 'Horário de largada cadastrado com sucesso')
+            return redirect('registrar_largada')
+    else:        
+        form = RegistrarLargadaForm()
+
+    return render(request, 'registrar_largada.html', {'form': form})
 

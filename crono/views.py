@@ -36,12 +36,16 @@ def registrar_largada(request):
         form = RegistrarLargadaForm(request.POST)
         if form.is_valid():
             numero_piloto = form.cleaned_data['numero_piloto']
-            piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
-            agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
-            largada= RegistrarLargada(numero_piloto=piloto, horario_largada= agora )
-            largada.save()
-            messages.success(request, 'Horário de largada cadastrado com sucesso')
-            return redirect('registrar_largada')
+            if Piloto.objects.filter(numero_piloto=numero_piloto).exists():
+                piloto = Piloto.objects.get(numero_piloto=numero_piloto)
+                agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+                largada= RegistrarLargada(numero_piloto=piloto, horario_largada= agora )
+                largada.save()
+                messages.success(request, 'Horário de largada cadastrado com sucesso')
+                return redirect('registrar_largada')
+            else:
+                messages.error(request, 'NUMERO PILOTO NÃO CADASTRADO!!')
+                return redirect('registrar_largada')
     else:        
         form = RegistrarLargadaForm()
 
@@ -54,46 +58,40 @@ def registrar_chegada(request):
         form = RegistrarChegadaForm(request.POST)
         if form.is_valid():
             numero_piloto = form.cleaned_data['numero_piloto']
-            piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
-            agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
-            chegada = RegistrarChegada(numero_piloto=piloto, horario_chegada=agora)
-            chegada.save()
+            if Piloto.objects.filter(numero_piloto=numero_piloto).exists():
+                piloto = Piloto.objects.get(numero_piloto=numero_piloto)
+                agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+                chegada = RegistrarChegada(numero_piloto=piloto, horario_chegada=agora)
+                chegada.save()
+                messages.success(request, 'Horário de chegada cadastrado com sucesso')
 
-            
-           
-            messages.success(request, 'Horário de chegada cadastrado com sucesso')
-
-            # Atualiza dados class Resultados
-            chegada_agora_time = datetime.strptime(agora, '%H:%M:%S.%f').time()
-            largada_resultado = RegistrarLargada.objects.filter(numero_piloto=piloto).last()
-            horario_largada_resultado = largada_resultado.horario_largada
-            if largada_resultado:
+                # Atualiza dados class Resultados
+                chegada_agora_time = datetime.strptime(agora, '%H:%M:%S.%f').time()
+                largada_resultado = RegistrarLargada.objects.filter(numero_piloto=piloto).last()
                 horario_largada_resultado = largada_resultado.horario_largada
+                if largada_resultado:
+                    horario_largada_resultado = largada_resultado.horario_largada
+                else:
+                    horario_largada_resultado = None
+                tempo_volta = datetime.combine(date.today(), chegada_agora_time) - datetime.combine(date.today(), horario_largada_resultado)
+                piloto = Piloto.objects.get(nome=piloto.nome, numero_piloto=piloto.numero_piloto, moto=piloto.moto, categoria=piloto.categoria)
+                nome = piloto.nome
+                numero_piloto = piloto.numero_piloto
+                moto = piloto.moto
+                categoria = piloto.categoria
+                resultado = Resultados(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria,
+                                id_volta=largada_resultado.id_volta, horario_largada=horario_largada_resultado,
+                                horario_chegada=chegada_agora_time, tempo_volta=tempo_volta)
+                resultado.tempo_volta = tempo_volta
+                resultado.tempo_total = sum(Resultados.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
+                resultado.save()
+
+                save_resultados(agora, numero_piloto)
+
+                return redirect('registrar_chegada')
             else:
-                horario_largada_resultado = None
-           
-            tempo_volta = datetime.combine(date.today(), chegada_agora_time) - datetime.combine(date.today(), horario_largada_resultado)
-            
-
-            piloto = Piloto.objects.get(nome=piloto.nome, numero_piloto=piloto.numero_piloto, moto=piloto.moto, categoria=piloto.categoria)
-            nome = piloto.nome
-            numero_piloto = piloto.numero_piloto
-            moto = piloto.moto
-            categoria = piloto.categoria
-
-            resultado = Resultados(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria,
-                               id_volta=largada_resultado.id_volta, horario_largada=horario_largada_resultado,
-                               horario_chegada=chegada_agora_time, tempo_volta=tempo_volta)
-   
-            resultado.tempo_volta = tempo_volta
-            resultado.tempo_total = sum(Resultados.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
-            resultado.save()
-
-            save_resultados(agora, numero_piloto)
-
-
-           
-            return redirect('registrar_chegada')
+                messages.error(request, 'NUMERO PILOTO NÃO CADASTRADO!!')
+                return redirect('registrar_chegada')
 
     else:
         form = RegistrarChegadaForm()
