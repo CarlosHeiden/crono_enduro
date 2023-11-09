@@ -66,26 +66,8 @@ def registrar_chegada(request):
                 messages.success(request, 'Horário de chegada cadastrado com sucesso')
 
                 # Atualiza dados class Resultados
-                chegada_agora_time = datetime.strptime(agora, '%H:%M:%S.%f').time()
-                largada_resultado = RegistrarLargada.objects.filter(numero_piloto=piloto).last()
-                horario_largada_resultado = largada_resultado.horario_largada
-                if largada_resultado:
-                    horario_largada_resultado = largada_resultado.horario_largada
-                else:
-                    horario_largada_resultado = None
-                tempo_volta = datetime.combine(date.today(), chegada_agora_time) - datetime.combine(date.today(), horario_largada_resultado)
-                piloto = Piloto.objects.get(nome=piloto.nome, numero_piloto=piloto.numero_piloto, moto=piloto.moto, categoria=piloto.categoria)
-                nome = piloto.nome
-                numero_piloto = piloto.numero_piloto
-                moto = piloto.moto
-                categoria = piloto.categoria
-                resultado = Resultados(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria,
-                                id_volta=largada_resultado.id_volta, horario_largada=horario_largada_resultado,
-                                horario_chegada=chegada_agora_time, tempo_volta=tempo_volta)
-                resultado.tempo_volta = tempo_volta
-                resultado.tempo_total = sum(Resultados.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
-                resultado.save()
-
+                save_dados_resultados(agora, numero_piloto)
+                 # Atualiza dados class DadosCorrida
                 save_resultados(agora, numero_piloto)
 
                 return redirect('registrar_chegada')
@@ -97,6 +79,30 @@ def registrar_chegada(request):
         form = RegistrarChegadaForm()
 
     return render(request, 'registrar_chegada.html', {'form': form})
+
+
+def save_dados_resultados(agora, numero_piloto):
+    chegada_agora_time = datetime.strptime(agora, '%H:%M:%S.%f').time()
+    piloto = get_object_or_404(Piloto, numero_piloto=numero_piloto)
+    largada_resultado = RegistrarLargada.objects.filter(numero_piloto=piloto).last()
+    horario_largada_resultado = largada_resultado.horario_largada
+    if largada_resultado:
+        horario_largada_resultado = largada_resultado.horario_largada
+    else:
+        horario_largada_resultado = None
+    tempo_volta = datetime.combine(date.today(), chegada_agora_time) - datetime.combine(date.today(), horario_largada_resultado)
+    piloto = Piloto.objects.get(nome=piloto.nome, numero_piloto=piloto.numero_piloto, moto=piloto.moto, categoria=piloto.categoria)
+    nome = piloto.nome
+    numero_piloto = piloto.numero_piloto
+    moto = piloto.moto
+    categoria = piloto.categoria
+    resultado = Resultados(nome=nome, numero_piloto=numero_piloto, moto=moto, categoria=categoria,
+                    id_volta=largada_resultado.id_volta, horario_largada=horario_largada_resultado,
+                    horario_chegada=chegada_agora_time, tempo_volta=tempo_volta)
+    resultado.tempo_volta = tempo_volta
+    resultado.tempo_total = sum(Resultados.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
+    resultado.save()
+
 
 
 
@@ -124,8 +130,6 @@ def save_resultados(agora, numero_piloto):
                         id_volta=largada_resultado.id_volta, horario_largada=horario_largada_resultado,
                         horario_chegada=chegada_agora_time, tempo_volta=tempo_volta)
 
-    #resultado.tempo_volta = tempo_volta
-    #resultado.tempo_total = sum(Resultados.objects.filter(numero_piloto=numero_piloto).values_list('tempo_volta', flat=True), tempo_volta)
     dados_corrida.save()
 
 
@@ -268,12 +272,12 @@ def resultado_tomada_tempo_por_categorias(request):
 
         for resultado in resultados_categoria:
             tempo_volta_min = resultado['min_tempo']
-            segundos_totais = tempo_volta_min.total_seconds()
+            tempo_volta = tempo_volta_min.total_seconds()
 
-            horas = int(segundos_totais // 3600)
-            minutos = int((segundos_totais % 3600) // 60)
-            segundos = int(segundos_totais % 60)
-            milissegundos = int((segundos_totais - int(segundos_totais)) * 1000)
+            horas = int(tempo_volta // 3600)
+            minutos = int((tempo_volta % 3600) // 60)
+            segundos = int(tempo_volta % 60)
+            milissegundos = int((tempo_volta - int(tempo_volta)) * 1000)
 
             # Formate cada parte do tempo com zeros à esquerda, se necessário
             tempo_volta_formatado = '{:02d}:{:02d}:{:02d}.{:03d}'.format(horas, minutos, segundos, milissegundos)
@@ -310,13 +314,20 @@ def resultado_tomada_tempo_por_piloto(request):
         volta_detail = []
         for resultado in resultados:
             tempo_volta = resultado.tempo_volta.total_seconds()
-            tempo_volta_str = '{:02d}:{:02d}:{:02.3f}'.format(int(tempo_volta // 3600), int((tempo_volta % 3600) // 60), (tempo_volta % 60))
+            horas = int(tempo_volta // 3600)
+            minutos = int((tempo_volta % 3600) // 60)
+            segundos = int(tempo_volta % 60)
+            milissegundos = int((tempo_volta - int(tempo_volta)) * 1000)
+
+            # Formate cada parte do tempo com zeros à esquerda, se necessário
+            tempo_volta_formatado = '{:02d}:{:02d}:{:02d}.{:03d}'.format(horas, minutos, segundos, milissegundos)
+            #tempo_volta_str = '{:02d}:{:02d}:{:02.3f}'.format(int(tempo_volta // 3600), int((tempo_volta % 3600) // 60), (tempo_volta % 60))
             horario_chegada_str = resultado.horario_chegada.strftime('%H:%M:%S')
             horario_largada_str = resultado.horario_largada.strftime('%H:%M:%S')
             volta_detail.append({
                 'horario_largada': horario_largada_str,
                 'horario_chegada': horario_chegada_str,
-                'tempo_volta': tempo_volta_str,
+                'tempo_volta': tempo_volta_formatado,
             })
 
 
