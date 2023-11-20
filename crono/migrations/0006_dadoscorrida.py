@@ -17,12 +17,22 @@ class Migration(migrations.Migration):
                 ('nome', models.CharField(max_length=100)),
                 ('moto', models.CharField(max_length=100)),
                 ('categoria', models.CharField(max_length=100)),
-                ('id_volta', models.AutoField(primary_key=True, serialize=False)),
+                (
+                    'id_volta',
+                    models.AutoField(primary_key=True, serialize=False),
+                ),
                 ('horario_largada', models.TimeField(blank=True, null=True)),
                 ('horario_chegada', models.TimeField(blank=True, null=True)),
                 ('tempo_volta', models.DurationField(blank=True, null=True)),
                 ('tempo_total', models.DurationField(blank=True, null=True)),
-                ('numero_piloto', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dadoscorridas', to='crono.piloto')),
+                (
+                    'numero_piloto',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='dadoscorridas',
+                        to='crono.piloto',
+                    ),
+                ),
             ],
         ),
     ]

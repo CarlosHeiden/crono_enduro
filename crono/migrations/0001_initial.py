@@ -8,14 +8,21 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
             name='Piloto',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('nome', models.CharField(max_length=100)),
                 ('numero_piloto', models.IntegerField(default=None)),
                 ('moto', models.CharField(max_length=100)),
@@ -25,7 +32,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Resultados',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('nome', models.CharField(max_length=100)),
                 ('numero_piloto', models.IntegerField(default=None)),
                 ('moto', models.CharField(max_length=100)),
@@ -40,19 +55,49 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Registrar_Largada',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('id_volta', models.IntegerField(blank=True, null=True)),
                 ('horario_largada', models.TimeField(blank=True, null=True)),
-                ('numero_piloto', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='largadas', to='crono.piloto')),
+                (
+                    'numero_piloto',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='largadas',
+                        to='crono.piloto',
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
             name='Registrar_Chegada',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    'id',
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name='ID',
+                    ),
+                ),
                 ('id_volta', models.IntegerField(blank=True, null=True)),
                 ('horario_chegada', models.TimeField(blank=True, null=True)),
-                ('numero_piloto', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chegadas', to='crono.piloto')),
+                (
+                    'numero_piloto',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='chegadas',
+                        to='crono.piloto',
+                    ),
+                ),
             ],
         ),
     ]

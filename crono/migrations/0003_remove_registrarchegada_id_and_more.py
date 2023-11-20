@@ -21,11 +21,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='registrarchegada',
             name='id_volta',
-            field=models.IntegerField(default=None, primary_key=True, serialize=False),
+            field=models.IntegerField(
+                default=None, primary_key=True, serialize=False
+            ),
         ),
         migrations.AlterField(
             model_name='registrarlargada',
             name='id_volta',
-            field=models.IntegerField(default=None, primary_key=True, serialize=False),
+            field=models.IntegerField(
+                default=None, primary_key=True, serialize=False
+            ),
         ),
     ]
