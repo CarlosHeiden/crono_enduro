@@ -22,7 +22,7 @@ class PilotoAdmin(ImportExportModelAdmin):
         'moto',
         'categoria',
     ]   # Define busca por nome na tabela de pilotos no painel de administração
-    pass
+
 
 
 admin.site.register(Piloto, PilotoAdmin)

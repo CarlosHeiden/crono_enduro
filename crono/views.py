@@ -408,10 +408,12 @@ def resultado_tomada_tempo(request):
 
 
 def resultado_tomada_tempo_por_categorias(request):
-    categorias = ['Nacional', 'Importada', 'Over']
-    resultados_por_categoria_nacional = []
-    resultados_por_categoria_importada = []
-    resultados_por_categoria_over = []
+    categorias = ['450cc Especial', '250cc Especial', '230cc Nacional', 'Força Livre', 'Street']
+    resultados_por_categoria_450cc_especial = []
+    resultados_por_categoria_250cc_especial = []
+    resultados_por_categoria_230_nacional = []
+    resultados_por_categoria_força_livre = []
+    resultados_por_categoria_street= []
 
     for categoria in categorias:
         resultados_categoria = DadosCorrida.objects.filter(categoria=categoria)
@@ -437,24 +439,40 @@ def resultado_tomada_tempo_por_categorias(request):
                 horas, minutos, segundos, milissegundos
             )
 
-            if categoria == 'Nacional':
-                resultados_por_categoria_nacional.append(
+            if categoria == '450cc Especial':
+                resultados_por_categoria_450cc_especial.append(
                     {
                         'nome': resultado['nome'],
                         'numero_piloto': resultado['numero_piloto'],
                         'tempo_total': tempo_volta_formatado,
                     }
                 )
-            elif categoria == 'Importada':
-                resultados_por_categoria_importada.append(
+            elif categoria == '250cc Especial':
+                resultados_por_categoria_250cc_especial.append(
                     {
                         'nome': resultado['nome'],
                         'numero_piloto': resultado['numero_piloto'],
                         'tempo_total': tempo_volta_formatado,
                     }
                 )
-            elif categoria == 'Over':
-                resultados_por_categoria_over.append(
+            elif categoria == '230cc Nacional':
+                resultados_por_categoria_230_nacional.append(
+                    {
+                        'nome': resultado['nome'],
+                        'numero_piloto': resultado['numero_piloto'],
+                        'tempo_total': tempo_volta_formatado,
+                    }
+                )
+            elif categoria == 'Força Livre':
+                resultados_por_categoria_força_livre.append(
+                    {
+                        'nome': resultado['nome'],
+                        'numero_piloto': resultado['numero_piloto'],
+                        'tempo_total': tempo_volta_formatado,
+                    }
+                )
+            elif categoria == 'Street':
+                resultados_por_categoria_street.append(
                     {
                         'nome': resultado['nome'],
                         'numero_piloto': resultado['numero_piloto'],
@@ -466,9 +484,11 @@ def resultado_tomada_tempo_por_categorias(request):
         request,
         'resultado_tomada_tempo_por_categorias.html',
         {
-            'resultados_por_categoria_nacional': resultados_por_categoria_nacional,
-            'resultados_por_categoria_importada': resultados_por_categoria_importada,
-            'resultados_por_categoria_over': resultados_por_categoria_over,
+            'resultados_por_categoria_450cc_especial': resultados_por_categoria_450cc_especial,
+            'resultados_por_categoria_250cc_especial': resultados_por_categoria_250cc_especial,
+            'resultados_por_categoria_230_nacional': resultados_por_categoria_230_nacional,
+            'resultados_por_categoria_força_livre' :resultados_por_categoria_força_livre, 
+            'resultados_por_categoria_street': resultados_por_categoria_street
         },
     )
 

@@ -7,8 +7,8 @@
     <title>Resultados por Categoria</title>
 </head>
 <body>
-    <h1>Resultados Categoria Nacional</h1>
-
+    <h1>Resultados por Categoria </h1>
+    <h2>Categoria 450cc Especial</h2>
     <table>
         <thead>
             <tr>
@@ -19,7 +19,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for resultado in resultados_por_categoria_nacional %}
+            {% for resultado in resultados_por_categoria_450cc_especial %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ resultado.nome }}</td>
@@ -29,8 +29,8 @@
             {% endfor %}
         </tbody>
     </table>
-    <h1>Resultados Categoria Importada</h1>
 
+    <h2>Categoria 250cc Especial</h2>
     <table>
         <thead>
             <tr>
@@ -41,7 +41,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for resultado in resultados_por_categoria_importada %}
+            {% for resultado in resultados_por_categoria_250cc_especial %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ resultado.nome }}</td>
@@ -51,27 +51,71 @@
             {% endfor %}
         </tbody>
     </table>
-</table>
-<h1>Resultados Categoria Over</h1>
 
-<table>
-    <thead>
-        <tr>
-            <th>Posição</th>
-            <th>Nome</th>
-            <th>Número</th>
-            <th>Melhor tempo</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for resultado in resultados_por_categoria_over %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ resultado.nome }}</td>
-            <td>{{ resultado.numero_piloto }}</td>
-            <td>{{ resultado.tempo_total }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+    <h2>Categoria 230cc Nacional</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Nome</th>
+                <th>Número</th>
+                <th>Melhor tempo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados_por_categoria_230_nacional %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ resultado.nome }}</td>
+                <td>{{ resultado.numero_piloto }}</td>
+                <td>{{ resultado.tempo_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Categoria Força Livre</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Nome</th>
+                <th>Número</th>
+                <th>Melhor tempo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados_por_categoria_força_livre %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ resultado.nome }}</td>
+                <td>{{ resultado.numero_piloto }}</td>
+                <td>{{ resultado.tempo_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <h2>Categoria Street</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Nome</th>
+                <th>Número</th>
+                <th>Melhor tempo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resultado in resultados_por_categoria_street %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ resultado.nome }}</td>
+                <td>{{ resultado.numero_piloto }}</td>
+                <td>{{ resultado.tempo_total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

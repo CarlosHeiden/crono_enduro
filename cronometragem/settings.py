@@ -69,7 +69,7 @@ WSGI_APPLICATION = 'cronometragem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_1.sqlite3',
+        'NAME': BASE_DIR / 'db_teste_01.sqlite3',
     }
 }
 
