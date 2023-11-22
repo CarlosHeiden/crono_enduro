@@ -68,8 +68,12 @@ WSGI_APPLICATION = 'cronometragem.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_teste_01.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'teste_mcb01',
+        'USER': 'root',
+        'PASSWORD': 'Ktmsx-350f',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
