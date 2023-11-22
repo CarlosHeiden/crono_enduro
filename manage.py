@@ -3,6 +3,7 @@
 import os
 import sys
 from crono.obter_ip import server_ip
+from crono.printar_rotas import print_routes
 
 
 def main():
@@ -23,4 +24,5 @@ def main():
 
 if __name__ == '__main__':
     print(server_ip)
+    print_routes(server_ip)
     main()

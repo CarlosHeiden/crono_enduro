@@ -2,30 +2,50 @@
 <html>
 <head>
     <meta http-equiv="refresh" content="60">
+
+    
+    <style>
+        h1 {
+            font-size: 22px;
+        }
+        h2 {
+            font-size: 20px;
+        }
+        th {
+            font-size: 18px;
+        }
+
+        td {
+            font-size: 18px;
+        }
+    </style>
 </head>
-  <h1>Resultado Tomada de tempo por Piloto</h1>
-{% for piloto in piloto_detail %}
-    <h2>Piloto {{ piloto.numero_piloto }} - {{ piloto.piloto.nome }}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Largada</th>
-                <th>Chegada</th>
-                <th>Tempo da Volta</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for volta in piloto.voltas %}
+<body>
+    <h1>Resultado Tomada de tempo por Piloto</h1>
+    {% for piloto in piloto_detail %}
+        <h2>Piloto {{ piloto.numero_piloto }} - {{ piloto.piloto.nome }}</h2>
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ volta.horario_largada }}</td>
-                    <td>{{ volta.horario_chegada }}</td>
-                    <td>{{ volta.tempo_volta }}</td>
+                    <th>Largada</th>
+                    <th>Chegada</th>
+                    <th>Tempo da Volta</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-            </tr>
-        </tfoot>
-    </table>
-{% endfor %}
+            </thead>
+            <tbody>
+                {% for volta in piloto.voltas %}
+                    <tr>
+                        <td>{{ volta.horario_largada }}</td>
+                        <td>{{ volta.horario_chegada }}</td>
+                        <td>{{ volta.tempo_volta }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                </tr>
+            </tfoot>
+        </table>
+    {% endfor %}
+</body>
+</html>
