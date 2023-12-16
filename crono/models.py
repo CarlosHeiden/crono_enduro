@@ -1,12 +1,19 @@
 from django.db import models
 from django.utils import timezone
 
+class Categoria(models.Model):
+    nome = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f'{self.nome}'
+    
+
 
 class Piloto(models.Model):
     nome = models.CharField(max_length=100)
     numero_piloto = models.IntegerField(default=None)
     moto = models.CharField(max_length=100)
-    categoria = models.CharField(max_length=100)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='categorias')
 
     def __str__(self):
         return f'{self.nome} ({self.numero_piloto})'

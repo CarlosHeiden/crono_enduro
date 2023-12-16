@@ -5,6 +5,7 @@ from crono.models import (
     RegistrarChegada,
     Resultados,
     DadosCorrida,
+    Categoria,
 )
 from django.contrib import messages
 from django.db.models import Q, Min
@@ -63,7 +64,7 @@ def registrar_largada(request):
                 )
                 largada.save()
                 messages.success(
-                    request, 'Horário de largada cadastrado com sucesso'
+                    request, f'Largada do piloto **{numero_piloto}** cadastrada com sucesso'
                 )
                 return redirect('registrar_largada')
             else:
@@ -89,7 +90,7 @@ def registrar_chegada(request):
                 )
                 chegada.save()
                 messages.success(
-                    request, 'Horário de chegada cadastrado com sucesso'
+                    request, f'Chegada do piloto **{numero_piloto}** cadastrada com sucesso'
                 )
 
                 # Atualiza dados class Resultados
@@ -131,7 +132,7 @@ def save_dados_resultados(agora, numero_piloto):
     nome = piloto.nome
     numero_piloto = piloto.numero_piloto
     moto = piloto.moto
-    categoria = piloto.categoria
+    categoria = str(piloto.categoria)
     resultado = Resultados(
         nome=nome,
         numero_piloto=numero_piloto,
@@ -178,7 +179,7 @@ def save_resultados(agora, numero_piloto):
     nome = piloto.nome
     numero_piloto = piloto.numero_piloto
     moto = piloto.moto
-    categoria = piloto.categoria
+    categoria = str(piloto.categoria)
 
     dados_corrida = DadosCorrida(
         nome=nome,
@@ -219,10 +220,11 @@ def resultados(request):
                 numero_piloto=piloto.numero_piloto
             )
         )
-        tempo_total_str = '{:02d}:{:02d}:{:02.3f}'.format(
+        tempo_total_str = '{:02d}:{:02d}:{:02d}.{:03d}'.format(
             int(tempo_total // 3600),
             int((tempo_total % 3600) // 60),
-            (tempo_total % 60),
+            int(tempo_total % 60),
+            int((tempo_total % 1) * 1000)
         )
 
         if tempo_total_str != '00:00:0.000':
@@ -242,15 +244,25 @@ def resultados(request):
     for position, piloto in enumerate(resultados_gerais, start=1):
         piloto['position'] = position
 
+    return render(
+        request,
+        'resultados.html',
+        {
+            'resultados_gerais': resultados_gerais,
+        },
+    )
+    
+def resultados_por_categorias(request):
     # Resultados por categoria
-    categorias = ['Nacional', 'Importada', 'Over']
+    resultado = Resultados.objects.all()
+    categorias = Categoria.objects.all()
     resultados_por_categoria = {categoria: [] for categoria in categorias}
     resultados_dict = {
         categoria: resultado.filter(categoria=categoria)
         for categoria in categorias
     }
 
-    tempo_total_por_piloto = {}
+    melhor_tempo_por_piloto = {}
     for categoria, resultados_categoria in resultados_dict.items():
         for resultado in resultados_categoria:
             if resultado.nome not in [
@@ -259,37 +271,25 @@ def resultados(request):
                 res['numero_piloto']
                 for res in resultados_por_categoria[categoria]
             ]:
-                if resultado.numero_piloto not in tempo_total_por_piloto:
-                    tempo_total_por_piloto[resultado.numero_piloto] = sum(
+                if resultado.numero_piloto not in melhor_tempo_por_piloto:
+                    melhor_tempo_por_piloto[resultado.numero_piloto] = sum(
                         res.tempo_volta.total_seconds()
                         for res in resultados_dict[categoria].filter(
                             numero_piloto=resultado.numero_piloto
                         )
                     )
-                    tempo_total_por_piloto_str = (
-                        '{:02d}:{:02d}:{:02.3f}'.format(
-                            int(
-                                tempo_total_por_piloto[resultado.numero_piloto]
-                                // 3600
-                            ),
-                            int(
-                                (
-                                    tempo_total_por_piloto[
-                                        resultado.numero_piloto
-                                    ]
-                                    % 3600
-                                )
-                                // 60
-                            ),
-                            tempo_total_por_piloto[resultado.numero_piloto]
-                            % 60,
-                        )
+                    melhor_tempo_por_piloto_str = '{:02d}:{:02d}:{:02d}.{:03d}'.format(
+                            int(melhor_tempo_por_piloto[resultado.numero_piloto]// 3600),
+                            int((melhor_tempo_por_piloto[resultado.numero_piloto]% 3600)// 60),
+                            int(melhor_tempo_por_piloto[resultado.numero_piloto]% 60),
+                            int((melhor_tempo_por_piloto[resultado.numero_piloto] % 1) * 1000)
                     )
+
                     resultados_por_categoria[categoria].append(
                         {
                             'nome': resultado.nome,
                             'numero_piloto': resultado.numero_piloto,
-                            'tempo_total': tempo_total_por_piloto_str,
+                            'tempo_total': melhor_tempo_por_piloto_str,
                         }
                     )
 
@@ -301,12 +301,11 @@ def resultados(request):
     for categoria, resultados_categoria in resultados_por_categoria.items():
         for position, resultado in enumerate(resultados_categoria, start=1):
             resultado['position'] = position
-        print(resultados_por_categoria)
+        #print(resultados_por_categoria)
     return render(
         request,
-        'resultados.html',
+        'resultados_por_categorias.html',
         {
-            'resultados_gerais': resultados_gerais,
             'resultados_por_categoria': resultados_por_categoria,
         },
     )
@@ -321,10 +320,11 @@ def resultado_piloto(request):
         volta_detail = []
         for resultado in resultados:
             tempo_volta = resultado.tempo_volta.total_seconds()
-            tempo_volta_str = '{:02d}:{:02d}:{:02.3f}'.format(
+            tempo_volta_str = '{:02d}:{:02d}:{:02d}.{:03d}'.format(
                 int(tempo_volta // 3600),
                 int((tempo_volta % 3600) // 60),
-                (tempo_volta % 60),
+                int(tempo_volta % 60),
+                int((tempo_volta % 1) * 1000)
             )
             horario_chegada_str = resultado.horario_chegada.strftime(
                 '%H:%M:%S'
@@ -344,10 +344,11 @@ def resultado_piloto(request):
         tempo_total = sum(
             resultado.tempo_volta.total_seconds() for resultado in resultados
         )
-        tempo_total_str = '{:02d}:{:02d}:{:03.3f}'.format(
+        tempo_total_str = '{:02d}:{:02d}:{:02d}.{:03d}'.format(
             int(tempo_total // 3600),
             int((tempo_total % 3600) // 60),
-            (tempo_total % 60),
+            int(tempo_total % 60),
+            int((tempo_total%1) * 1000)
         )
 
         piloto_detail.append(
@@ -406,92 +407,55 @@ def resultado_tomada_tempo(request):
         {'resultado_geral_tomada_tempo': resultado_geral_tomada_tempo},
     )
 
-
 def resultado_tomada_tempo_por_categorias(request):
-    categorias = ['450cc Especial', '250cc Especial', '230cc Nacional', 'Força Livre', 'Street']
-    resultados_por_categoria_450cc_especial = []
-    resultados_por_categoria_250cc_especial = []
-    resultados_por_categoria_230_nacional = []
-    resultados_por_categoria_força_livre = []
-    resultados_por_categoria_street= []
-
-    for categoria in categorias:
-        resultados_categoria = DadosCorrida.objects.filter(categoria=categoria)
-
-        # Usamos a função annotate com Min para encontrar o menor tempo de volta para cada piloto
-        resultados_categoria = (
-            resultados_categoria.values('nome', 'numero_piloto')
-            .annotate(min_tempo=Min('tempo_volta'))
-            .order_by('min_tempo')
-        )
-
+    resultado = DadosCorrida.objects.all()
+    categorias = Categoria.objects.all()
+    resultados_por_categoria = {categoria: [] for categoria in categorias}
+    resultados_dict = {
+        categoria: resultado.filter(categoria=categoria)
+        for categoria in categorias
+    }
+    melhor_tempo_por_piloto = {}
+    for categoria, resultados_categoria in resultados_dict.items():
         for resultado in resultados_categoria:
-            tempo_volta_min = resultado['min_tempo']
-            tempo_volta = tempo_volta_min.total_seconds()
+            if resultado.nome not in [
+                res['nome'] for res in resultados_por_categoria[categoria]
+            ] and resultado.numero_piloto not in [
+                res['numero_piloto']
+                for res in resultados_por_categoria[categoria]
+            ]:
+                if resultado.numero_piloto not in melhor_tempo_por_piloto:
+                    melhor_tempo_por_piloto[resultado.numero_piloto] = resultado.tempo_volta
+                else:
+                    melhor_tempo_por_piloto[resultado.numero_piloto] = min(melhor_tempo_por_piloto[resultado.numero_piloto], resultado.tempo_volta)
+                tempo_volta = resultado.tempo_volta.total_seconds()
+                horas = int(tempo_volta // 3600)
+                minutos = int((tempo_volta % 3600) // 60)
+                segundos = int(tempo_volta % 60)
+                milissegundos = int((tempo_volta - int(tempo_volta)) * 1000)
 
-            horas = int(tempo_volta // 3600)
-            minutos = int((tempo_volta % 3600) // 60)
-            segundos = int(tempo_volta % 60)
-            milissegundos = int((tempo_volta - int(tempo_volta)) * 1000)
-
-            # Formate cada parte do tempo com zeros à esquerda, se necessário
-            tempo_volta_formatado = '{:02d}:{:02d}:{:02d}.{:03d}'.format(
-                horas, minutos, segundos, milissegundos
-            )
-
-            if categoria == '450cc Especial':
-                resultados_por_categoria_450cc_especial.append(
+                # Formate cada parte do tempo com zeros à esquerda, se necessário
+                tempo_volta_formatado = '{:02d}:{:02d}:{:02d}.{:03d}'.format(horas, minutos, segundos, milissegundos)
+                resultados_por_categoria[categoria].append(
                     {
-                        'nome': resultado['nome'],
-                        'numero_piloto': resultado['numero_piloto'],
-                        'tempo_total': tempo_volta_formatado,
-                    }
-                )
-            elif categoria == '250cc Especial':
-                resultados_por_categoria_250cc_especial.append(
-                    {
-                        'nome': resultado['nome'],
-                        'numero_piloto': resultado['numero_piloto'],
-                        'tempo_total': tempo_volta_formatado,
-                    }
-                )
-            elif categoria == '230cc Nacional':
-                resultados_por_categoria_230_nacional.append(
-                    {
-                        'nome': resultado['nome'],
-                        'numero_piloto': resultado['numero_piloto'],
-                        'tempo_total': tempo_volta_formatado,
-                    }
-                )
-            elif categoria == 'Força Livre':
-                resultados_por_categoria_força_livre.append(
-                    {
-                        'nome': resultado['nome'],
-                        'numero_piloto': resultado['numero_piloto'],
-                        'tempo_total': tempo_volta_formatado,
-                    }
-                )
-            elif categoria == 'Street':
-                resultados_por_categoria_street.append(
-                    {
-                        'nome': resultado['nome'],
-                        'numero_piloto': resultado['numero_piloto'],
-                        'tempo_total': tempo_volta_formatado,
+                        'nome': resultado.nome,
+                        'numero_piloto': resultado.numero_piloto,
+                        'melhor_tempo': tempo_volta_formatado,
                     }
                 )
 
+    # Adicionando posição aos resultados por categoria
+    for categoria, resultados_categoria in resultados_por_categoria.items():
+        for position, resultado in enumerate(resultados_categoria, start=1):
+            resultado['position'] = position
+        #print(resultados_por_categoria)
     return render(
         request,
         'resultado_tomada_tempo_por_categorias.html',
         {
-            'resultados_por_categoria_450cc_especial': resultados_por_categoria_450cc_especial,
-            'resultados_por_categoria_250cc_especial': resultados_por_categoria_250cc_especial,
-            'resultados_por_categoria_230_nacional': resultados_por_categoria_230_nacional,
-            'resultados_por_categoria_força_livre' :resultados_por_categoria_força_livre, 
-            'resultados_por_categoria_street': resultados_por_categoria_street
+            'resultados_por_categoria': resultados_por_categoria,
         },
     )
-
 
 def resultado_tomada_tempo_por_piloto(request):
     piloto_detail = []

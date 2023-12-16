@@ -4,10 +4,10 @@
     <meta http-equiv="refresh" content="60">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado_tomada_tempo_por_categorias</title>
+    <title>Resultados_por_categorias</title>
 </head>
 <body>
-  <h1>Resultado tomada tempo por categorias</h1>
+  <h1>ENDURO FIM Resultados por categorias</h1>
 </table>
 
 {% for categoria, resultados_categoria in resultados_por_categoria.items %}
@@ -15,9 +15,9 @@
   <table>
     <thead>
       <tr>
-        <th>Posiçao</th>
+        <th>Posição</th>
         <th>Piloto</th>
-        <th>Melhor tempo</th>
+        <th>Tempo Total</th>
       </tr>
     </thead>
     <tbody>
@@ -25,7 +25,7 @@
         <tr>
           <td>{{ resultado.position }}</td>
           <td>{{ resultado.nome }} (#{{ resultado.numero_piloto }})</td>
-          <td>{{ resultado.melhor_tempo }}</td>
+          <td>{{ resultado.tempo_total }}</td>
         </tr>
       {% endfor %}
     </tbody>

@@ -12,16 +12,17 @@ urlpatterns = [
         'registrar_chegada/', views.registrar_chegada, name='registrar_chegada'
     ),
     path('resultados/', views.resultados, name='resultados'),
-    path('resultado_piloto/', views.resultado_piloto, name='resultado_piloto'),
+    path('resultados_por_categorias/',views.resultados_por_categorias, name='resultados_por_categorias'),
+    path('resultado_piloto/',views.resultado_piloto, name='resultado_piloto'),
     path(
         'resultado_geral_tomada_tempo/',
         views.resultado_tomada_tempo,
         name='resultado_geral_tomada_tempo',
     ),
     path(
-        'resultado_por_categorias/',
+        'resultado_tomada_tempo_por_categorias/',
         views.resultado_tomada_tempo_por_categorias,
-        name='resultado_por_categorias',
+        name='resultado_tomada_tempo_por_categorias',
     ),
     path(
         'resultado_tomada_tempo_por_piloto/',

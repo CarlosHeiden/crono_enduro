@@ -44,3 +44,202 @@ def registrar_largada(request):
 
     return render(request, 'registrar_largada.html', {'form': form})
 
+
+
+# arquivo models.py
+
+from django.db import models
+from django.utils import timezone
+
+class Categoria(models.Model):
+    nome = models.CharField(max_length=100)
+    
+
+
+class Piloto(models.Model):
+    nome = models.CharField(max_length=100)
+    numero_piloto = models.IntegerField(default=None)
+    moto = models.CharField(max_length=100)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='categorias')
+
+    def __str__(self):
+        return f'{self.nome} ({self.numero_piloto})'
+
+
+class RegistrarLargada(models.Model):
+    id_volta = models.AutoField(primary_key=True)
+    numero_piloto = models.ForeignKey(
+        Piloto, on_delete=models.CASCADE, related_name='largadas'
+    )
+    horario_largada = models.TimeField(null=True, blank=True)
+
+
+class RegistrarChegada(models.Model):
+    id_volta = models.AutoField(primary_key=True)
+    numero_piloto = models.ForeignKey(
+        Piloto, on_delete=models.CASCADE, related_name='chegadas'
+    )
+    horario_chegada = models.TimeField(null=True, blank=True)
+
+
+class Resultados(models.Model):
+
+    nome = models.CharField(max_length=100)
+    numero_piloto = models.IntegerField(default=None)
+    moto = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=100)
+    id_volta = models.IntegerField(default=0)
+    horario_largada = models.TimeField(null=True, blank=True)
+    horario_chegada = models.TimeField(null=True, blank=True)
+    tempo_volta = models.DurationField(null=True, blank=True)
+    tempo_total = models.DurationField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.nome} ({self.numero_piloto})'
+
+
+class DadosCorrida(models.Model):
+    nome = models.CharField(max_length=100)
+    numero_piloto = models.IntegerField(default=None)
+    moto = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=100)
+    id_volta = models.AutoField(primary_key=True)
+    horario_largada = models.TimeField(null=True, blank=True)
+    horario_chegada = models.TimeField(null=True, blank=True)
+    tempo_volta = models.DurationField(null=True, blank=True)
+    tempo_total = models.DurationField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.nome} ({self.numero_piloto})'
+
+# arquivo views
+
+
+def registrar_largada(request):
+    if request.method == 'POST':
+        form = RegistrarLargadaForm(request.POST)
+        if form.is_valid():
+            numero_piloto = form.cleaned_data['numero_piloto']
+            if Piloto.objects.filter(numero_piloto=numero_piloto).exists():
+                piloto = Piloto.objects.get(numero_piloto=numero_piloto)
+                agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+                largada = RegistrarLargada(
+                    numero_piloto=piloto, horario_largada=agora
+                )
+                largada.save()
+                messages.success(
+                    request, 'Horário de largada cadastrado com sucesso'
+                )
+                return redirect('registrar_largada')
+            else:
+                messages.error(request, 'NUMERO PILOTO NÃO CADASTRADO!!')
+                return redirect('registrar_largada')
+    else:
+        form = RegistrarLargadaForm()
+
+    return render(request, 'registrar_largada.html', {'form': form})
+
+
+def registrar_chegada(request):
+    numero_piloto = None
+    if request.method == 'POST':
+        form = RegistrarChegadaForm(request.POST)
+        if form.is_valid():
+            numero_piloto = form.cleaned_data['numero_piloto']
+            if Piloto.objects.filter(numero_piloto=numero_piloto).exists():
+                piloto = Piloto.objects.get(numero_piloto=numero_piloto)
+                agora = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+                chegada = RegistrarChegada(
+                    numero_piloto=piloto, horario_chegada=agora
+                )
+                chegada.save()
+                messages.success(
+                    request, 'Horário de chegada cadastrado com sucesso'
+                )
+
+                # Atualiza dados class Resultados
+                save_dados_resultados(agora, numero_piloto)
+                # Atualiza dados class DadosCorrida
+                save_resultados(agora, numero_piloto)
+
+                return redirect('registrar_chegada')
+            else:
+                messages.error(request, 'NUMERO PILOTO NÃO CADASTRADO!!')
+                return redirect('registrar_chegada')
+
+    else:
+        form = RegistrarChegadaForm()
+
+    return render(request, 'registrar_chegada.html', {'form': form})
+
+
+#arquivo views.py
+
+def resultado_tomada_tempo_por_categorias(request):
+    resultado = DadosCorrida.objects.all()
+    categorias = Categoria.objects.all()
+    resultados_por_categoria = {categoria: [] for categoria in categorias}
+    resultados_dict = {
+        categoria: resultado.filter(categoria=categoria)
+        for categoria in categorias
+    }
+    melhor_tempo_por_piloto = {}
+    for categoria, resultados_categoria in resultados_dict.items():
+        for resultado in resultados_categoria:
+            if resultado.nome not in [
+                res['nome'] for res in resultados_por_categoria[categoria]
+            ] and resultado.numero_piloto not in [
+                res['numero_piloto']
+                for res in resultados_por_categoria[categoria]
+            ]:
+                if resultado.numero_piloto not in melhor_tempo_por_piloto:
+                    melhor_tempo_por_piloto[resultado.numero_piloto] = sum(
+                        res.tempo_volta.total_seconds()
+                        for res in resultados_dict[categoria].filter(
+                            numero_piloto=resultado.numero_piloto
+                        )
+                    )
+                    melhor_tempo_por_piloto_str = (
+                        '{:02d}:{:02d}:{:02.3f}'.format(
+                            int(
+                                melhor_tempo_por_piloto[resultado.numero_piloto]
+                                // 3600
+                            ),
+                            int(
+                                (
+                                    melhor_tempo_por_piloto[
+                                        resultado.numero_piloto
+                                    ]
+                                    % 3600
+                                )
+                                // 60
+                            ),
+                            melhor_tempo_por_piloto[resultado.numero_piloto]
+                            % 60,
+                        )
+                    )
+                    resultados_por_categoria[categoria].append(
+                        {
+                            'nome': resultado.nome,
+                            'numero_piloto': resultado.numero_piloto,
+                            'melhor_tempo': melhor_tempo_por_piloto_str,
+                        }
+                    )
+
+        resultados_por_categoria[categoria] = sorted(
+            resultados_por_categoria[categoria], key=lambda x: x['melhor_tempo']
+        )
+
+    # Adicionando posição aos resultados por categoria
+    for categoria, resultados_categoria in resultados_por_categoria.items():
+        for position, resultado in enumerate(resultados_categoria, start=1):
+            resultado['position'] = position
+        #print(resultados_por_categoria)
+    return render(
+        request,
+        'resultado_tomada_tempo_por_categorias.html',
+        {
+            'resultados_por_categoria': resultados_por_categoria,
+        },
+    )
+

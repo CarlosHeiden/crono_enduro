@@ -69,7 +69,7 @@ WSGI_APPLICATION = 'cronometragem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'teste_mcb01',
+        'NAME': 'teste_mcb02',
         'USER': 'root',
         'PASSWORD': 'Ktmsx-350f',
         'HOST': 'localhost',
