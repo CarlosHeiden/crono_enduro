@@ -3,6 +3,9 @@ from . import views
 
 
 urlpatterns = [
+    path('menu_cadastro/', views.menu_cadastro, name='menu_cadastro'),
+    path('menu_resultados_enduro/', views.menu_resultados_enduro,  name="menu_resultados_enduro"),
+    path('menu_resultados_tomada_tempo/', views.menu_resultados_tomada_tempo,  name="menu_resultados_tomada_tempo"),
     path('cadastrar_piloto/', views.cadastrar_piloto, name='cadastrar_piloto'),
     path('exibir_pilotos/', views.exibir_pilotos, name='exibir_pilotos'),
     path(

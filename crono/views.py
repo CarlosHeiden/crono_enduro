@@ -503,3 +503,12 @@ def resultado_tomada_tempo_por_piloto(request):
         'resultado_tomada_tempo_por_piloto.html',
         {'piloto_detail': piloto_detail},
     )
+
+def menu_cadastro(request):
+    return render(request, 'menu_cadastro.html')
+
+def menu_resultados_enduro(request):
+    return render(request, 'menu_resultados_enduro.html')
+
+def menu_resultados_tomada_tempo(request):
+    return render(request, 'menu_resultados_tomada_tempo.html')
